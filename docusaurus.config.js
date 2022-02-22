@@ -109,7 +109,7 @@ const config = {
         copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
       },
       prism: {
-        additionalLanguages: ['java', 'bash', 'properties','powershell'],
+        additionalLanguages: ['java', 'bash', 'properties','powershell', 'json'],
         // theme: lightCodeTheme,
         theme: darkCodeTheme,
         // darkTheme: darkCodeTheme,

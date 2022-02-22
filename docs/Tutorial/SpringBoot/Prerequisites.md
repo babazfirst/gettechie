@@ -1,6 +1,6 @@
 ---
-sidebar_posittion: 1
-sidebar_lable: prerequisites
+sidebar_position: 2
+sidebar_label: Prerequisite
 ---
 ___
 
