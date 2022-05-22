@@ -1,48 +1,706 @@
 ---
 sidebar_position: 7
+title: Repositories
 sidebar_label: 5 - Repositories
 ---
 
-# Create Application
+<!-- Imports -->
 
-Let's discover **Docusaurus in less than 5 minutes**.
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-## Getting Started
+# Learn
 
-Get started by **creating a new site**.
+### What is a Repository?
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+A **repository** is Spring's abstraction of the data access layer. In this bootcamp, we use the JPA (**Java Persistence API**) to implement the repository.
 
-### What you'll need
+The core functionality of every API is to serve data stored in a database. The repository interface is agnostic to the back-end, be that an in-memory database, an SQL instance, or some flavor of no-SQL. 
 
-- [Node.js](https://nodejs.org/en/download/) version 14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+### What is an entity?
 
-## Generate a new site
+An **entity** is a Java class that can be mapped to a JPA repository. To create an entity with Spring, two annotation are required at minimum: 
 
-Generate a new Docusaurus site using the **classic template**.
+1. `@Entity` over the class definition and 
+1. `@Id` over the ID field. 
 
-The classic template will automatically be added to your project after you run the command:
+### What is a DTO and why do we use them? 
 
-```bash
-npm init docusaurus@latest my-website classic
+In a Spring application, a **data transfer object** (or **DTO**) is a POJO that mirrors and entity. It contains all the same fields as the entity, but none of the functionality (except getter and setters). We use DTOs to encapsulate relevant data for transport. As you'll see in the exercise, our `GET` endpoint will now accept and return a DTO. 
+
+Because DTOs mirror entities, translating a DTO to an entity and vice versa is very simple. We will use a transformer class to do this in the exercise. 
+
+<!-- We need to decide if these are worth keeping. I feel like we never actually talk about them.
+- How do you use MySQL as an application's database? 
+- What are secrets?
+- How do you use environment variables to change environments?
+-->
+
+---
+
+## Do 
+
+### !. Add dependencies
+
+In order to add a data persistence layer, we need to add some new dependencies to `build.gradle`: 
+
+```groovy title="build.gradle"
+dependencies {
+  ...
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  implementation 'com.h2database:h2'
+  implementation 'mysql:mysql-connector-java'
+  ...
+}
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+:::caution Important 
+There are two groups (or **closures**) named `dependencies`: one within the `buildscript` closure at the top of the file and one on its own further down. We want to add there dependencies to the standalone closure.
+:::
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+The first dependecy adds JPA to the project, while the second and third add our database options: H2, and in-memory database, and MySQL. 
 
-## Start your site
+Make sure to refresh your Gradle project after adding these dependencies. IntelliJ may also prompt you to choose whether or not you'd like to auto-import changes. You may do so if you with, but it isn't necessary. 
 
-Run the development server:
+### 2. Write `SnackEntity` and `SnackRepository`
 
-```bash
-cd my-website
-npm run start
+We will use our existing `Snack` POJO as the DTO of our service rather than creating a new DTO class. We will create a new `SnackEntity` class to use with the repository.
+
+In the `src/main/java/com.gettechie.<your project name>` directory, create a new package classed `entity`.
+
+In the newly create package, create a new Java class called `SnackEntity.java`.
+
+This class should have the same two fields as `Snack` (`id` and `name`), a default constructor, parameterized constructor, and getters, just like our original `Snack` class.
+
+<Tabs 
+  groupId="SnackEntity"
+  defaultValue="snippet"
+  values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+<TabItem value="snippet">
+
+```java title="SnackEntity.java"
+@Entity 
+@Table(name = "my_snacks")
+public class SnackEntity {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
+  ...
+} 
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+</TabItem>
+<TabItem value="full">
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name.
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+```java title="SnackEntity.java"
+package com.gettechie.bootcamp.entity;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name = "my_snack")
+public class SnackEntity {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  Integer id;
+
+  String name; 
+
+  public SnackEntity() {
+  } 
+
+  public SnackEntity(Integer id, String name) {
+    this.id = id;
+    this.name = name; 
+  }
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name= name;
+  }
+
+}
+
+```
+
+</TabItem>
+</Tabs>
+
+- As mentioned above, `@Entity` designated our class as a Spring entity. 
+
+- `@Table` tells the JPA which database table this entity is stored in. we don't technically need it for this example, but in a real-world application with a complex, pre-existing database, it is a necessary. 
+
+- `@Id` denoted which field stores the ID (i.e the **primary key**) of the entity in the database. 
+
+- `@GeneratedValue` tells Spring that the following field should be automatically generated. This is commonly used on Id fields (as we are using it) to ensure that every instance of the entity has a unique ID.
+
+--- 
+
+The repository should be created as an interface within a new package named `repository`.
+
+In the `src/main/java/com.gettechie.<your project name>` directory, create a new package called `repository`. 
+
+In the newly created package, create a new Java interface called `SnackRepository.java`. 
+
+<Tabs
+  groupId="SnackEntity"
+  defaultValue="snippet"
+  values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+    <TabItem value="snippet">
+
+```java title="SnackRepository.java"
+public interface SnackRepository extends JpaRepository<SnackEntity, Integer> {}
+```
+
+  </TabItem>
+
+  <TabItem value="full">
+
+```java title="full"
+package com.gettechie.bootcamp.repository; 
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.gettechie.bootcamp.entity.SnackEntity;
+
+public interface SnackRepository extends JpaRepository<SnackEntity, Integer> {}
+
+```
+
+  </TabItem>
+
+</Tabs>
+
+The two values within the angle bracket (`<>`) are the entity stored in this repository and the type of that entity's ID, respectively. This is why the `id`field of our `Snack` class is an `Integer` instead of an `int`; and `int` isn't an object, and thus can't be used as a parameter of a genericized class. 
+
+### 3. Refactor `SnackService`
+
+We do not want `SnackService` to be creating our Snack objects directly anymore. We want to use methods of our `SnackRepository` to retrieve them. We also need to update the service to return `SnackEntity` objects rather than `Snack` objects. 
+
+The `JpaRepository` interface (which our `SnackRepository` extends) provides us with several methods for performing basic **CRUD** (**create, read, update, delete**) operations. We can also define our own methods in our repositories, but for the bootcamp, we won't need to.
+
+
+<Tabs 
+  groupId="SnackService"
+  defaultValue="snippet"
+  values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+
+  <TabItem value="snippet">
+
+```java title="SnackService.java"
+@Service 
+public class SnackService {
+  //highlight-start
+  @Autowired SnackRepository SnackRepository;
+
+  public SnackEntity getSnackById(Integer id) {
+    Optional<SnackEntity> mySnack = SnackRepository.findById(id);
+  }
+  //highlight-end
+  ...
+}
+```
+
+  </TabItem>
+
+  <TabItem value="full">
+
+If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
+
+```java title="SnackService.java"
+package com.gettechie.bootcamp.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.gettechie.bootcamp.entity.SnackEntity;
+import com.gettechie.bootcamp.repository.SnackRepository;
+
+@Service
+public class SnackService {
+
+  @Autowired SnackRepository snackRepository;
+
+  public SnackEntity getSnackById(Integer id) {
+    Optional<SnackEntity> mySnack = snackRepository.findById(id);
+
+    return mySnack.orElseThrow();
+  }
+}
+```
+
+  </TabItem>
+
+</Tabs>
+
+### 4. Write `SnackTransformer`
+
+For the transformer, in the `src/main/java/com.gettechie.<your project name>` directory, create a new package called `transformer`. 
+
+In the newly created package, create a new Java class called `SnackTransformer.java`. 
+
+The transformer only needs two static methods: one to convert from a `SnackEntity` to `Snack` and one to convert from a `Snack` to a `SnackEntity`. 
+
+:::info
+We are writing this transformer to demonstrate the process, but in an actual application, you might want to use an external library such as [MapStruct](https://mapstruct.org/) to reduce the amount of code you have to write. 
+:::
+
+<Tabs
+  groupId="SnackTransformer"
+  defaultValue="snippet"
+  values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+
+<TabItem value="snippet">
+
+```java title="SnackTransformer.java"
+public class SnackTransformer {
+
+    public static Snack toSnack(SnackEntity fromSnack) {
+    ...
+    }
+
+    public static SnackEntity toSnackEntity(Snack fromSnack) {
+    ...
+    }
+}
+```
+
+</TabItem>
+  <TabItem value="full">
+
+If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
+
+```java title="SnackTransformer.java"
+package com.gettechie.bootcamp.transformer;
+
+import com.gettechie.bootcamp.entity.SnackEntity;
+import com.gettechie.bootcamp.model.Snack;
+
+public class SnackTransformer {
+
+  public static Snack toSnack(SnackEntity fromSnack) {
+    Snack snack = new Snack();
+    snack.setId(fromSnack.getId());
+    snack.setName(fromSnack.getName());
+
+    return SnackEntity;
+  }
+  
+  public static SnackEntity toSnackEntity(Snack fromSnack) {
+    SnackEntity snackEntity = new SnackEntity();
+    snackEntity.setId(fromSnack.getId());
+    snackEntity.setName(fromSnack.getName());
+
+    return snackEntity;
+  }
+
+}
+```  
+
+  </TabItem>
+
+</Tabs>
+
+In addition, we need to refactor the `getSnackById()` method in our `SnackController` to utilize the transformer. More specifically, the method returns a `Snack`, so we will have to convert the `SnackEntity` we receive from `SnackService` to a `Snack` before returning it.  
+
+<Tabs
+    groupId ="SnackController"
+    defaultValue="snippet"
+    values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+<TabItem value="snippet">
+
+```java title="SnackController.java"  
+  ...
+
+  public Snack getSnackById(@PathVariable("snackId") Integer id) {
+
+    return SnackTransformer.toSnack(snackService.getSnackById(id));
+  }
+```
+
+  </TabItem>
+
+  <TabItem value="full">
+  
+If copying the entire file, you must change the package name (first line) to match your project name. 
+
+```java title="SnackController.java"
+package com.gettechie.bootcamp.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import com.gettechie.bootcamp.entity.SnackEntity;
+import com.gettechie.bootcamp.model.Snack;
+import com.gettechie.bootcamp.service.SnackEntity;
+import com.gettechie.bootcamp.transformer.SnackTransformer;
+
+@RestController 
+public class SnackController {
+  @Autowired SnackService snackService;
+
+  @GetMapping(value = "/v1/snack/{snackId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Snack getSnackById(@PathVariable("snackId") Integer id) {
+    return SnackTransformer.toSnack(snackService.getSnackById(id));
+  }
+}
+```
+
+  </TabItem>
+
+</Tabs>
+
+### 5. Write `POST` endpoint 
+
+Now that we are using our repository, we need to be able to write to it. For this, we will be creating a new endpoint in `SnackController`.
+
+Just like our `GET` endpoint, our new `POST` endpoint requests an annotated method in the controller. The header for the controller method is provided below:
+
+<Tabs
+  groupId="SnackController2"
+  defaultValue="snippet"
+  values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+
+  <TabItem value="snippet">
+
+ ```java title="SnackController.java"
+@PostMapping(
+    value = "/v1/snacks",
+    consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
+
+  public Snack createSnack(@RequestBody Snack snack) {
+    ...
+  }
+ ```
+
+  </TabItem>
+
+  <TabItem value="full">
+  
+If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
+
+
+```java title="SnackController.java"
+package com.gettechie.bootcamp.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import com.gettechie.bootcamp.entity.SnackEntity;
+import com.gettechie.bootcamp.model.Snack;
+import com.gettechie.bootcamp.service.SnackEntity;
+import com.gettechie.bootcamp.transformer.SnackTransformer;
+
+@RestController 
+public class SnackController {
+  @Autowired SnackService snackService;
+
+  @GetMapping(value = "/v1/snack/{snackId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Snack getSnackById(@PathVariable("snackId") Integer id) {
+    return SnackTransformer.toSnack(snackService.getSnackById(id));
+  }
+
+  @PostMapping(
+    value = "/v1/snacks",
+    consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
+  public Snack createSnack(@RequestBody Snack snack) {
+    
+    SnackEntity snackToCreate = SnackTransformer.toSnackEntity(snack);
+    SnackEntity createdSnack = snackService.createSnack(snackToCreate);
+
+    return SnackTransformer.toSnack(createdSnack);
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+
+In addition, we need to write a `createSnack()` method in `SnackService` to actually perform the logic. 
+
+<Tabs
+    groupId ="SnackService2"
+    defaultValue="snippet"
+    values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+<TabItem value="snippet">
+
+```java title="SnackService.java"
+  public SnackEntity createSnack(SnackEntity snackToCreate) {
+    ...
+  }
+
+```
+
+  </TabItem>
+
+  <TabItem value="full">
+
+If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
+
+```java title="SnackService.java"
+package com.gettechie.bootcamp.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.gettechie.bootcamp.entity.SnackEntity;
+import com.gettechie.bootcamp.repository.SnackRepository;
+
+@Service
+public class SnackService {
+
+  @Autowired SnackRepository snackRepository;
+
+  public SnackEntity getSnackById(Integer id) {
+    Optional<SnackEntity> mySnack = snackRepository.findById(id);
+
+    return mySnack.orElseThrow();
+  }
+
+  public SnackEntity createSnack(SnackEntity snackToCreate) {
+    return snackRepository.save(snackToCreate);
+  }
+
+}
+```
+
+  </TabItem>
+
+</Tabs>
+
+### 6. Update Configuration files 
+
+Now that we've implemented a Spring repository, we need a database to back it, For now, we will use an H2 in-memory database. To add this, add the following lines to the end of `src/main/resources/application.properties`:
+
+<Tabs
+    groupId ="appProperties"
+    defaultValue="snippet"
+    values={[
+        {label: 'Code Snippet', value: 'snippet'},
+        {label: 'Full Code', value: 'full'},
+    ]}>
+<TabItem value="snippet">
+
+```properties title="src/main/resources/application.properties"
+spring.datasource.url=jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+spring.datasource.username=sa
+spring.datasource.password=sa
+```
+
+  </TabItem>
+
+  
+<TabItem value="full">
+
+```properties title="src/main/resources/application.properties"
+# Prefix all routes with /api
+server.servlet.contextPath=/api
+
+#Enable CORS for actuator endpoints
+management.endpoints.web.cors.allowed-origins=*
+management.endpoints.web.cors.allowed-methods=OPTIONS,GET
+management.endpoints.web.cors.allowed-headers=*
+management.endpoints.web.exposure.include=health,prometheus,info
+
+spring.profiles.active=${ENVIRONMENT_NAME:local}
+spring.datasource.url=jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+spring.datasource.username=sa
+spring.datasource.password=sa
+```
+
+</TabItem>
+
+</Tabs>
+
+
+
+### 7. Write tests
+
+In this step, we will:
+
+- Update existing unit and integration tests.
+- Write and additional test in `SnackControllerTest` and `SnackServiceTest` for the `createSnack()` method.
+- Add a new unit test for `SnackTransformer`. 
+- Update the integration test for first create a snack before retrieving it. 
+- Below are just example if you stuck, Please tru on your own first.
+
+<Tabs
+  defaultValue="empty"
+  values={[
+    {label: 'Examples', value: 'empty'},
+    {label: 'SnackControllerTest', value: 'createSnackTest'},
+    {label: 'SnackServiceTest', value: 'saveSnackTest'},
+    {label: 'SnackTransformerTest', value: 'transformerTests'},
+    {label: 'SnackIntegrationTest', value: 'createSnackIntegrationTest'},
+  ]}>
+
+  <TabItem value="empty">
+    <br/>
+  </TabItem>
+
+  <TabItem value="createSnackTest">
+
+Because we need to mock static method contained in `SnackTransformer.java`, and additional dependency must be added to the `build.gradle` file
+
+```groovy title="build.gradle"
+dependencies {
+  ...
+  testImplementation('org.mockito-inline:3.9.0')
+  ...
+}
+```  
+
+```java title="SnackControllerTest.java"
+  @Test
+  public void createSnackTest() {
+    Integer id = 1;
+    String name = "John";
+    Snack snack = new Snack(id, name);
+    SnackEntity snackEntity = new SnackEntity(id, name);
+
+    try (MockedStatic<SnackTransformer> transformer = Mockito.mockStatic(SnackTransformer.class)) {
+      transformer
+        .when(
+          () -> {
+            SnackTransformer.toSnackEntity(snack);
+          }
+        )
+        .thenReturn(snackEntity);
+      
+      Mockito.when(snackService.createSnack(snackEntity)).thenReturn(snackEntity);
+
+      transformer
+        .when(
+          () -> {
+            SnackTransformer.toSnack(snackEntity);
+          }
+        ) 
+        .thenReturn(snack);
+
+        Snack createdSnack = snackController.createSnack(snack);
+
+        assertThat(createdSnack.getId()).isEqualTo(snackEntity.getId());
+        assertThat(createdSnack.getName()).isEqualTo(snackEntity.getName());
+    
+    }
+  }
+```
+  
+  </TabItem>
+
+  <TabItem value="saveSnackTest">
+
+```java title="SnackServiceTest.java"
+  @Test 
+  public void saveSnackTest() {
+    SnackEntity snackToCreate = new SnackEntity(1, "John");
+
+    Mockito.when(snackRepository.save(snackToCreate)).thenReturn(snackToCreate);
+
+    SnackEntity createdSnack = snackService.createSnack(snackToCreate);
+
+    assertThat(snackToCreate.getId()).isEqualTo(createdSnack.getId());
+    assertThat(snackToCreate.getName()).isEqualTo(createdSnack.getName());
+  }
+
+```
+
+  </TabItem>
+
+  <TabItem value="transformerTests">
+
+```java title="SnackTransformerTest.java"
+  @Test 
+  public void toSnackTest() {
+    Integer id = 2;
+    String name = "John";
+    SnackEntity snackEntity = new SnackEntity(id, name);
+
+    Snack snack = SnackTransformer.toSnack(snackEntity);
+
+    assertThat(snack.getId()).isEqualTo(id);
+    assertThat(snack.getName()).isEqualTo(name);    
+  }
+
+  @Test 
+  public void toSnackEntityTest() {
+    Integer id = 3;
+    String name = "Chris";
+    Snack snack = new Snack(id, name);
+
+    SnackEntity snackEntity = SnackTransformer.toSnackEntity(snackEntity);
+
+    assertThat(snackEntity.getId()).isEqualTo(id);
+    assertThat(snackEntity.getName()).isEqualTo(name);  
+  }
+```
+
+  </TabItem>
+
+  <TabItem value="createSnackIntegrationTest">
+
+```java title="SnackTest.java"
+  @Test
+  public void createSnackIntegrationTest() {
+    String payload = "{\n" + "  \"name\": \"John\"\n" + "}";
+    given()
+          .contentType(contentType.JSON)
+          .accept(contentType.JSON)
+          .body(payload)
+          .when()
+          .post("api/v1/snacks")
+          .then()
+          .assertThat()
+          .statusCode(200)
+          .body("name", equalTo("John"));
+  }
+``` 
+
+  </TabItem>
+
+</Tabs>
+
+:::note
+We do not need to write any unit tests for `SnackRepository` because we did not write any new methods for it. we assume that the writers of the JPA have thoroughly tested its functionality. However, if we had written our own methods in `SnackRepository`, we would need to test them.
+:::
+
+
