@@ -13,45 +13,45 @@ import TabItem from '@theme/TabItem';
 
 ### What is a service?
 
-A **service** is the part of your application that handles all the business loggic. Services are, essentially, the meat of your applications. In Spring Boot, we use the `@service` annotation to tell Spring that our class is a service. 
+A **service** is the part of your application that handles all the business logic. Services are, essentially, the meat of your applications. In Spring Boot, we use the `@service` annotation to tell Spring that our class is a service. 
 
-The methods in your servvices are primarily called from the controller, but services in the smae applciation are also free to communicate with one another (remember, in the RESTful API world, different applciation can _only_ communicate with each otehr through their APIs). In this exercise, we will only be implementing one service, but there's no limit on the number of services you can include. Additionally, our service is going to be rather simple, but in practice, your services will be much larger and more complex.
+The methods in your services are primarily called from the controller, but services in the same application are also free to communicate with one another (remember, in the RESTful API world, different application can _only_ communicate with each other through their APIs). In this exercise, we will only be implementing one service, but there's no limit on the number of services you can include. Additionally, our service is going to be rather simple, but in practice, your services will be much larger and more complex.
 
 ### What is Mockito and what do we use it for? 
 
 [Mockito](https://site.mockito.org/) is a mocking framework for our unit tests. **Mockito** is the process of faking or simulating classes. But why would we do that? Let's look at an example. 
 
-Say we wanted to write some tests for a controller to make sure that, from the perspective of a client application, our calls return the right information (we did this in [Exercise 5](./controllers#3-write-tests)). The client application doesn't care how the information is procure, only that it can make a call to an endpoint and get the right information back. The server-side application is a "black box". So, in our unit tests, we want to emulate that. We don't care how the information about our snacks in gathered, but we know what it should look like. You will be addding a service to your application in this exercise that is responsible for retriving the information about the `Snack`. Back for the purposes of testing the controller, we don't need to know how the service does this. This is where mocking comes into play. 
+Say we wanted to write some tests for a controller to make sure that, from the perspective of a client application, our calls return the right information (we did this in [Exercise 5](./controllers#3-write-tests)). The client application doesn't care how the information is procure, only that it can make a call to an endpoint and get the right information back. The server-side application is a "black box". So, in our unit tests, we want to emulate that. We don't care how the information about our Students in gathered, but we know what it should look like. You will be adding a service to your application in this exercise that is responsible for retrieving the information about the `Student`. Back for the purposes of testing the controller, we don't need to know how the service does this. This is where mocking comes into play. 
 
-We don't need our controller tests to make calls to an actual instance of our service class, so we simulate one instead. We use the `@MockBean` annotation to denote an object refrence as a mock. For instance, this line lets us pretend that we have an instance of `SnackService`:
+We don't need our controller tests to make calls to an actual instance of our service class, so we simulate one instead. We use the `@MockBean` annotation to denote an object reference as a mock. For instance, this line lets us pretend that we have an instance of `StudentService`:
 
 ```java
 @MockBean 
-private SnackService snackService;
+private StudentService studentService;
 ```
 
 Now, let's look at an example unit test:
 
-```java title="SnackControllerTest.java"
+```java title="StudentControllerTest.java"
 @Test 
-public void getSnackByIdTest() {
+public void getStudentByIdTest() {
     Integer id = 1;
-    String name = "Butterfingers";
-    Snack snackToReturn = new Snack(id, name);
+    String name = "John";
+    Student StudentToReturn = new Student(id, name);
 
     // highlight-next-line
-    Mockito.when(snackService.getSnackById(id));
+    Mockito.when(StudentService.getStudentById(id));
 
-    assertThat(snack.getId()).isEqualTo(id);
-    assertThat(snack.getName()).isEqualTo(name);
+    assertThat(Student.getId()).isEqualTo(id);
+    assertThat(Student.getName()).isEqualTo(name);
 }
 ```
 
-First, look at the first three lines of the method. Here, we're creating a `Snack`. This is the information we want to have at the end of test.
+First, look at the first three lines of the method. Here, we're creating a `Student`. This is the information we want to have at the end of test.
 
 Now take a look at the highlighted line. This where the magic happens. Let's break it down: 
 
-- The `when()` method accepts a call to our mocked `SnackService` and returns when that call is made. 
+- The `when()` method accepts a call to our mocked `StudentService` and returns when that call is made. 
 - `theReturn()` simple returns the given object when it's called. 
 
 This line reads like a sentence: "When this call is made, then return this object."
@@ -60,9 +60,9 @@ This line reads like a sentence: "When this call is made, then return this objec
 This technique is called **stubbing**, for those who are interested. We also use something called **partial mocking**, but the details aren't important here.
 :::
 
-In short, this line simple returns `snackToReturn` when we call `getSnackById(id)` in our mocked `SnackService`. But why is that useful? 
+In short, this line simple returns `StudentToReturn` when we call `getStudentById(id)` in our mocked `StudentService`. But why is that useful? 
 
-By mocking our `SnackService`, we have removed the need to worry about how `getSnackById()` works. `getSnackById()` could be an extremely long and complicated method, ut as long as we know what is _should_ return, we don't have to worry about changes in `getSnackById()` impacting our tests. All the controller cares about is that it makes a call to `getSnackById()` and get a `Snack` in return, so that's all we need to test. If a developer breaks `getSnackById()`, the tests for the controller don't have to be rewritten. 
+By mocking our `StudentService`, we have removed the need to worry about how `getStudentById()` works. `getStudentById()` could be an extremely long and complicated method, ut as long as we know what is _should_ return, we don't have to worry about changes in `getStudentById()` impacting our tests. All the controller cares about is that it makes a call to `getStudentById()` and get a `Student` in return, so that's all we need to test. If a developer breaks `getStudentById()`, the tests for the controller don't have to be rewritten. 
 
 In Summary, Mockito is a very useful, time-saving tool. It has a lot of functionality available-more than we can cover and more than we need in the bootcamp-but visit the [Mockito JavaDocs](https://javadoc.io/doc/org.mockito/mockito-core/latest/index.html) to learn more.
 
@@ -71,16 +71,16 @@ In Summary, Mockito is a very useful, time-saving tool. It has a lot of function
 
 ## Do 
 
-### 1. Write `SnackService`
+### 1. Write `StudentService`
 
-For now, we only need one method, `getSnackById()`, that returns a `Snack` object. 
+For now, we only need one method, `getStudentById()`, that returns a `Student` object. 
 
-In the `srcc/main/java/com/optum.<your project name>` directory, create a new pacjage called `service`.
+In the `src/main/java/com.geteche.students` directory, create a new package called `service`.
 
-In The newly created package, create a new Java class called `SnackService.java`. 
+In The newly created package, create a new Java class called `StudentService.java`. 
 
 <Tabs
-    groupId="SnackService"
+    groupId="StudentService"
     defaultValue="snippet"
     values={[
         {label: "Code Snippet", value: "snippet"},
@@ -88,12 +88,14 @@ In The newly created package, create a new Java class called `SnackService.java`
     ]}>
 <TabItem value="snippet">
 
-```java title="SnackService.java"
+```java title="StudentService.java"
 @Service
-public class SnackService {
-    public Snack getSnackById(Integer id) {
+public class StudentService {
+
+    public Student getStudentById(Integer id) {
         ...
     }
+
 }
 ```
 
@@ -101,20 +103,22 @@ public class SnackService {
 
 <TabItem value="full">
 
-If copyiing the full file, you must change the package name (first line) to match your project name. 
+If copying the full file, you must change the package name (first line) to match your project name. 
 
-```java title="SnackService.java"
-package com.optum.bootcamp.service;
+```java title="StudentService.java"
+package com.geteche.students.service;
 
 import org.springframework.stereotype.Service;
 
-import com.optum.bootcamp.model.Snack;
+import com.geteche.students.model.Student;
 
 @Service
-public class SnackService {
-    public Snack getSnackById(Integer id) {
-        return new Snack(id, "Butterfingers");
+public class StudentService {
+    
+    public Student getStudentById(Integer id) {
+        return new Student(id, "John");
     }
+
 }
 ```
 
@@ -122,16 +126,16 @@ public class SnackService {
 </Tabs>
 
 
-### 2. Update `SnackController`
+### 2. Update `StudentController`
 
 We don't want our business logic in our controller-that violates the basic coding principle of **separation of concerns**-so we need to make call to our new service class.
 
-Update the `SnackController.java` class in the `controller` package. 
+Update the `StudentController.java` class in the `controller` package. 
 
-Add the dependency to the `SnackService` using the `@Autowired` annotation. Update the `getSnackById()` method. 
+Add the dependency to the `StudentService` using the `@Autowired` annotation. Update the `getStudentById()` method. 
 
 <Tabs
-    groupId="SnackController"
+    groupId="StudentController"
     defaultValue="snippet"
     values={[
         {label: "Code Snippet", value: "snippet"},
@@ -139,11 +143,11 @@ Add the dependency to the `SnackService` using the `@Autowired` annotation. Upda
     ]}>
 <TabItem value="snippet">
 
-```java title="SnackController.java"
+```java title="StudentController.java"
 @Autowired
-private SnackService snackService;
+private StudentService studentService;
     ... 
-    public Snack getSnackById(@PathVariable("snackId") Integer id) {
+    public Student getStudentById(@PathVariable("StudentId") Integer id) {
         ...
     }
 ```
@@ -152,10 +156,10 @@ private SnackService snackService;
 
 <TabItem value="full">
 
-If copyiing the full file, you must change the package name (first line) to match your project name. 
+If copying the full file, you must change the package name (first line) to match your project name. 
 
-```java title="SnackService.java"
-package com.optum.bootcamp.controller;
+```java title="StudentService.java"
+package com.geteche.students.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -163,18 +167,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.optum.bootcamp.model.Snack;
-import com.optum.bootcamp.service.SnackService;
+import com.geteche.students.model.Student;
+import com.geteche.students.service.StudentService;
 
 @RestController
-public class SnackController {
+public class StudentController {
 
     @Autowired
-    private SnackService snackService;
+    private StudentService studentService;
 
-    @GetMapping(value = "/v1/snacks/{snackId}", produces = MediaType.APPLICAION_JSON_VALUE)
-    public Snack getSnackById(@PathVariable("snackId") Integer id) {
-        return snackService.getSnackById(id);
+    @GetMapping(value = "/v1/students/{studentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Student getStudentById(@PathVariable("studentId") Integer id) {
+        return studentService.getStudentById(id);
     }
 }
 ```
@@ -184,16 +188,16 @@ public class SnackController {
 
 ### 3. Write tests 
 
-Write a new unit test for the `getSnackById()` method we added in `SnackService`. Additionally, update the unit test for `SnackController` to utilize Mockito. 
+Write a new unit test for the `getStudentById()` method we added in `StudentService`. Additionally, update the unit test for `StudentController` to utilize Mockito. 
 
-#### SnackServiceTest 
+#### StudentServiceTest 
 
-In the `src/test/java/com.optum.<your project name>` directory, create a new package called `service`.
+In the `src/test/java/com.geteche.students` directory, create a new package called `service`.
 
-In the  newly created package, create a new Java class called `SnackServiceTest.java`.
+In the  newly created package, create a new Java class called `StudentServiceTest.java`.
 
 <Tabs
-    groupId="SnackServiceTest"
+    groupId="StudentServiceTest"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -201,15 +205,15 @@ In the  newly created package, create a new Java class called `SnackServiceTest.
     ]}>
 <TabItem value="snippet">
 
-```java titel="SnackServiceTest.java"
+```java title="StudentServiceTest.java"
 @SpringBootTest
-public class SnackServiceTest {
+public class StudentServiceTest {
 
     @Autowired
-    private SnackService snackService;
+    private StudentService studentService;
 
     @Test 
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         ...
     }
 }
@@ -220,8 +224,8 @@ public class SnackServiceTest {
 
 If copying the full file, you must change the package name (first line) to match your project name. 
 
-```java title="SnackServiceTest.java"
-package com.optum.bootcamp.servvice;
+```java title="StudentServiceTest.java"
+package com.geteche.students.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -229,21 +233,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.optum.bootcamp.model.Snack;
+import com.geteche.students.model.Student;
 
 @SpringBootTest 
-public class SnackServiceTest {
+public class StudentServiceTest {
 
     @Autowired
-    private SnackService snackService;
+    private StudentService studentService;
 
     @Test 
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         Integer id = 1;
-        Snack snack = snackService.getSnackById(id);
+        Student Student = studentService.getStudentById(id);
 
-        assertThat(snack.getId()).isEqualTo(id);
-        assertThat(snack.getName()).isEqualTo("Butterfingers");
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo("John");
     }
 }
 ```
@@ -251,12 +255,12 @@ public class SnackServiceTest {
 </TabItem>
 </Tabs>
 
-#### SnackControllerTest
+#### StudentControllerTest
 
-In the `src/test/java/com.optum.<your project name>/controller` package, update `SnackControllerTest.java` to mock the SnackService object. 
+In the `src/test/java/com.geteche.students/controller` package, update `StudentControllerTest.java` to mock the StudentService object. 
 
 <Tabs 
-    groupId="SnackControllerTest"
+    groupId="StudentControllerTest"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -264,16 +268,16 @@ In the `src/test/java/com.optum.<your project name>/controller` package, update 
     ]}>
 <TabItem value="snippet">
 
-```java titel="SnackControllerTest.java"
+```java title="StudentControllerTest.java"
 ...
     @Autowired
-    private SnackController SnackController;
+    private StudentController studentController;
 
     @MockBean
-    private SnackService snackService;
+    private StudentService studentService;
 
     @Test 
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         ...
     }
 }
@@ -285,8 +289,8 @@ In the `src/test/java/com.optum.<your project name>/controller` package, update 
 
 If copying the full file, you must change the package name (first line) to match your project name. 
 
-```java titel="SnackControllerTest.java"
-package com.optum.bootcamp.controller;
+```java title="StudentControllerTest.java"
+package com.geteche.students.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -296,30 +300,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import com.optum.bootcamp.model.Snack;
-import com.optum.bootcamp.service.SnackService;
+import com.geteche.students.model.Student;
+import com.geteche.students.service.StudentService;
 
 @SpringBootTest
-public class SnackControllerTest {
+public class StudentControllerTest {
 
     @Autowired
-    private SnackController snackController;
+    private StudentController studentController;
 
     @MockBean
-    private SnackService snackService;
+    private StudentService studentService;
 
     @Test
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         Integer id  = 1;
-        String name = "Butterfingers";
-        Snack snackToReturn = new Snack(id, name);
+        String name = "John";
+        Student studentToReturn = new Student(id, name);
 
-        Mockito.when(snackService.getSnackById(id)).thenReturn(snackToReturn);
+        Mockito.when(studentService.getStudentById(id)).thenReturn(studentToReturn);
 
-        Snack snack = snackController.getSnackById(id);
+        Student Student = studentController.getStudentById(id);
 
-        assertThat(snack.get()).isEqualTo(id);
-        assertThat(snack.getName()).isEqualTo(name);
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo(name);
     }
 }
 ```
@@ -328,11 +332,6 @@ public class SnackControllerTest {
 </Tabs>
 
 Run your tests as in [Controllers](./controllers#3-write-tests).
-
-:::note
-We don't need to changes our integration tests in this exercise because nothing about the exposed endpoint has changed; we're still returning a snack with the given ID. 
-It would still be a good idea to [run those tests](./controllers#3-write-tests), however, just to be sure that our changes haven't caused any unintended behavior.
-:::
 
 ### 4. Deploy to nonprod 
 

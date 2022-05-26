@@ -40,7 +40,7 @@ Because DTOs mirror entities, translating a DTO to an entity and vice versa is v
 
 ## Do 
 
-### !. Add dependencies
+### 1. Add dependencies
 
 In order to add a data persistence layer, we need to add some new dependencies to `build.gradle`: 
 
@@ -49,7 +49,6 @@ dependencies {
   ...
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'com.h2database:h2'
-  implementation 'mysql:mysql-connector-java'
   ...
 }
 ```
@@ -58,22 +57,22 @@ dependencies {
 There are two groups (or **closures**) named `dependencies`: one within the `buildscript` closure at the top of the file and one on its own further down. We want to add there dependencies to the standalone closure.
 :::
 
-The first dependecy adds JPA to the project, while the second and third add our database options: H2, and in-memory database, and MySQL. 
+The first dependency adds JPA to the project, while the second add our database options: H2, in-memory database. 
 
 Make sure to refresh your Gradle project after adding these dependencies. IntelliJ may also prompt you to choose whether or not you'd like to auto-import changes. You may do so if you with, but it isn't necessary. 
 
-### 2. Write `SnackEntity` and `SnackRepository`
+### 2. Write `StudentEntity` and `StudentRepository`
 
-We will use our existing `Snack` POJO as the DTO of our service rather than creating a new DTO class. We will create a new `SnackEntity` class to use with the repository.
+We will use our existing `Student` POJO as the DTO of our service rather than creating a new DTO class. We will create a new `StudentEntity` class to use with the repository.
 
-In the `src/main/java/com.gettechie.<your project name>` directory, create a new package classed `entity`.
+In the `src/main/java/com.geteche.students` directory, create a new package classed `entity`.
 
-In the newly create package, create a new Java class called `SnackEntity.java`.
+In the newly create package, create a new Java class called `StudentEntity.java`.
 
-This class should have the same two fields as `Snack` (`id` and `name`), a default constructor, parameterized constructor, and getters, just like our original `Snack` class.
+This class should have the same two fields as `Student` (`id` and `name`), a default constructor, parameterized constructor, and getters, just like our original `Student` class.
 
 <Tabs 
-  groupId="SnackEntity"
+  groupId="StudentEntity"
   defaultValue="snippet"
   values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -81,10 +80,10 @@ This class should have the same two fields as `Snack` (`id` and `name`), a defau
     ]}>
 <TabItem value="snippet">
 
-```java title="SnackEntity.java"
+```java title="StudentEntity.java"
 @Entity 
-@Table(name = "my_snacks")
-public class SnackEntity {
+@Table(name = "student")
+public class StudentEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
@@ -97,14 +96,14 @@ public class SnackEntity {
 
 If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name.
 
-```java title="SnackEntity.java"
-package com.gettechie.bootcamp.entity;
+```java title="StudentEntity.java"
+package com.geteche.students.entity;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "my_snack")
-public class SnackEntity {
+@Table(name = "student")
+public class StudentEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -112,10 +111,10 @@ public class SnackEntity {
 
   String name; 
 
-  public SnackEntity() {
+  public StudentEntity() {
   } 
 
-  public SnackEntity(Integer id, String name) {
+  public StudentEntity(Integer id, String name) {
     this.id = id;
     this.name = name; 
   }
@@ -155,12 +154,12 @@ public class SnackEntity {
 
 The repository should be created as an interface within a new package named `repository`.
 
-In the `src/main/java/com.gettechie.<your project name>` directory, create a new package called `repository`. 
+In the `src/main/java/com.geteche.students` directory, create a new package called `repository`. 
 
-In the newly created package, create a new Java interface called `SnackRepository.java`. 
+In the newly created package, create a new Java interface called `StudentRepository.java`. 
 
 <Tabs
-  groupId="SnackEntity"
+  groupId="StudentEntity"
   defaultValue="snippet"
   values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -168,21 +167,23 @@ In the newly created package, create a new Java interface called `SnackRepositor
     ]}>
     <TabItem value="snippet">
 
-```java title="SnackRepository.java"
-public interface SnackRepository extends JpaRepository<SnackEntity, Integer> {}
+```java title="StudentRepository.java"
+public interface StudentRepository extends JpaRepository<StudentEntity, Integer> {}
 ```
 
   </TabItem>
 
   <TabItem value="full">
 
-```java title="full"
-package com.gettechie.bootcamp.repository; 
+```java title="StudentRepository.java"
+package com.geteche.students.repository; 
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.gettechie.bootcamp.entity.SnackEntity;
+import com.geteche.students.entity.StudentEntity;
 
-public interface SnackRepository extends JpaRepository<SnackEntity, Integer> {}
+public interface StudentRepository extends JpaRepository<StudentEntity, Integer> {
+
+}
 
 ```
 
@@ -190,17 +191,17 @@ public interface SnackRepository extends JpaRepository<SnackEntity, Integer> {}
 
 </Tabs>
 
-The two values within the angle bracket (`<>`) are the entity stored in this repository and the type of that entity's ID, respectively. This is why the `id`field of our `Snack` class is an `Integer` instead of an `int`; and `int` isn't an object, and thus can't be used as a parameter of a genericized class. 
+The two values within the angle bracket (`<>`) are the entity stored in this repository and the type of that entity's ID, respectively. This is why the `id`field of our `Student` class is an `Integer` instead of an `int`; and `int` isn't an object, and thus can't be used as a parameter of a genericized class. 
 
-### 3. Refactor `SnackService`
+### 3. Refactor `StudentService`
 
-We do not want `SnackService` to be creating our Snack objects directly anymore. We want to use methods of our `SnackRepository` to retrieve them. We also need to update the service to return `SnackEntity` objects rather than `Snack` objects. 
+We do not want `StudentService` to be creating our Student objects directly anymore. We want to use methods of our `StudentRepository` to retrieve them. We also need to update the service to return `StudentEntity` objects rather than `Student` objects. 
 
-The `JpaRepository` interface (which our `SnackRepository` extends) provides us with several methods for performing basic **CRUD** (**create, read, update, delete**) operations. We can also define our own methods in our repositories, but for the bootcamp, we won't need to.
+The `JpaRepository` interface (which our `StudentRepository` extends) provides us with several methods for performing basic **CRUD** (**create, read, update, delete**) operations. We can also define our own methods in our repositories, but for the bootcamp, we won't need to.
 
 
 <Tabs 
-  groupId="SnackService"
+  groupId="StudentService"
   defaultValue="snippet"
   values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -209,14 +210,16 @@ The `JpaRepository` interface (which our `SnackRepository` extends) provides us 
 
   <TabItem value="snippet">
 
-```java title="SnackService.java"
+```java title="StudentService.java"
 @Service 
-public class SnackService {
-  //highlight-start
-  @Autowired SnackRepository SnackRepository;
+public class StudentService {
 
-  public SnackEntity getSnackById(Integer id) {
-    Optional<SnackEntity> mySnack = SnackRepository.findById(id);
+  //highlight-start
+  @Autowired 
+  StudentRepository studentRepository;
+
+  public StudentEntity getStudentById(Integer id) {
+    Optional<StudentEntity> myStudent = studentRepository.findById(id);
   }
   //highlight-end
   ...
@@ -229,24 +232,31 @@ public class SnackService {
 
 If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
 
-```java title="SnackService.java"
-package com.gettechie.bootcamp.service;
+```java title="StudentService.java"
+package com.geteche.students.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gettechie.bootcamp.entity.SnackEntity;
-import com.gettechie.bootcamp.repository.SnackRepository;
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.repository.StudentRepository;
+
+import java.util.Optional;
 
 @Service
-public class SnackService {
+public class StudentService {
 
-  @Autowired SnackRepository snackRepository;
+  //highlight-start
+  @Autowired 
+  StudentRepository studentRepository;
+  //highlight-end
 
-  public SnackEntity getSnackById(Integer id) {
-    Optional<SnackEntity> mySnack = snackRepository.findById(id);
+  public StudentEntity getStudentById(Integer id) {
+    //highlight-start
+    Optional<StudentEntity> student = studentRepository.findById(id);
+    //highlight-end
 
-    return mySnack.orElseThrow();
+    return student.orElseThrow();
   }
 }
 ```
@@ -255,20 +265,20 @@ public class SnackService {
 
 </Tabs>
 
-### 4. Write `SnackTransformer`
+### 4. Write `StudentTransformer`
 
-For the transformer, in the `src/main/java/com.gettechie.<your project name>` directory, create a new package called `transformer`. 
+For the transformer, in the `src/main/java/com.geteche.students` directory, create a new package called `transformer`. 
 
-In the newly created package, create a new Java class called `SnackTransformer.java`. 
+In the newly created package, create a new Java class called `StudentTransformer.java`. 
 
-The transformer only needs two static methods: one to convert from a `SnackEntity` to `Snack` and one to convert from a `Snack` to a `SnackEntity`. 
+The transformer only needs two static methods: one to convert from a `StudentEntity` to `Student` and one to convert from a `Student` to a `StudentEntity`. 
 
 :::info
 We are writing this transformer to demonstrate the process, but in an actual application, you might want to use an external library such as [MapStruct](https://mapstruct.org/) to reduce the amount of code you have to write. 
 :::
 
 <Tabs
-  groupId="SnackTransformer"
+  groupId="StudentTransformer"
   defaultValue="snippet"
   values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -277,14 +287,14 @@ We are writing this transformer to demonstrate the process, but in an actual app
 
 <TabItem value="snippet">
 
-```java title="SnackTransformer.java"
-public class SnackTransformer {
+```java title="StudentTransformer.java"
+public class StudentTransformer {
 
-    public static Snack toSnack(SnackEntity fromSnack) {
+    public static Student toStudent(StudentEntity fromStudent) {
     ...
     }
 
-    public static SnackEntity toSnackEntity(Snack fromSnack) {
+    public static StudentEntity toStudentEntity(Student fromStudent) {
     ...
     }
 }
@@ -295,28 +305,28 @@ public class SnackTransformer {
 
 If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
 
-```java title="SnackTransformer.java"
-package com.gettechie.bootcamp.transformer;
+```java title="StudentTransformer.java"
+package com.geteche.students.transformer;
 
-import com.gettechie.bootcamp.entity.SnackEntity;
-import com.gettechie.bootcamp.model.Snack;
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.model.Student;
 
-public class SnackTransformer {
+public class StudentTransformer {
 
-  public static Snack toSnack(SnackEntity fromSnack) {
-    Snack snack = new Snack();
-    snack.setId(fromSnack.getId());
-    snack.setName(fromSnack.getName());
+  public static Student toStudent(StudentEntity fromStudent) {
+    Student student = new Student();
+    student.setId(fromStudent.getId());
+    student.setName(fromStudent.getName());
 
-    return SnackEntity;
+    return student;
   }
   
-  public static SnackEntity toSnackEntity(Snack fromSnack) {
-    SnackEntity snackEntity = new SnackEntity();
-    snackEntity.setId(fromSnack.getId());
-    snackEntity.setName(fromSnack.getName());
+  public static StudentEntity toStudentEntity(Student fromStudent) {
+    StudentEntity studentEntity = new StudentEntity();
+    studentEntity.setId(fromStudent.getId());
+    studentEntity.setName(fromStudent.getName());
 
-    return snackEntity;
+    return studentEntity;
   }
 
 }
@@ -326,10 +336,10 @@ public class SnackTransformer {
 
 </Tabs>
 
-In addition, we need to refactor the `getSnackById()` method in our `SnackController` to utilize the transformer. More specifically, the method returns a `Snack`, so we will have to convert the `SnackEntity` we receive from `SnackService` to a `Snack` before returning it.  
+In addition, we need to refactor the `getStudentById()` method in our `StudentController` to utilize the transformer. More specifically, the method returns a `Student`, so we will have to convert the `StudentEntity` we receive from `StudentService` to a `Student` before returning it.  
 
 <Tabs
-    groupId ="SnackController"
+    groupId ="StudentController"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -337,12 +347,12 @@ In addition, we need to refactor the `getSnackById()` method in our `SnackContro
     ]}>
 <TabItem value="snippet">
 
-```java title="SnackController.java"  
+```java title="StudentController.java"  
   ...
 
-  public Snack getSnackById(@PathVariable("snackId") Integer id) {
+  public Student getStudentById(@PathVariable("StudentId") Integer id) {
 
-    return SnackTransformer.toSnack(snackService.getSnackById(id));
+    return StudentTransformer.toStudent(StudentService.getStudentById(id));
   }
 ```
 
@@ -352,25 +362,28 @@ In addition, we need to refactor the `getSnackById()` method in our `SnackContro
   
 If copying the entire file, you must change the package name (first line) to match your project name. 
 
-```java title="SnackController.java"
-package com.gettechie.bootcamp.controller;
+```java title="StudentController.java"
+package com.geteche.students.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.gettechie.bootcamp.entity.SnackEntity;
-import com.gettechie.bootcamp.model.Snack;
-import com.gettechie.bootcamp.service.SnackEntity;
-import com.gettechie.bootcamp.transformer.SnackTransformer;
+import com.geteche.students.model.Student;
+import com.geteche.students.service.StudentService;
+import com.geteche.students.transformer.StudentTransformer;
 
 @RestController 
-public class SnackController {
-  @Autowired SnackService snackService;
+public class StudentController {
 
-  @GetMapping(value = "/v1/snack/{snackId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Snack getSnackById(@PathVariable("snackId") Integer id) {
-    return SnackTransformer.toSnack(snackService.getSnackById(id));
+  @Autowired 
+  StudentService studentService;
+
+  @GetMapping(value = "/v1/students/{studentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Student getStudentById(@PathVariable("studentId") Integer id) {
+    //highlight-start
+    return StudentTransformer.toStudent(studentService.getStudentById(id));
+    //highlight-end
   }
 }
 ```
@@ -381,12 +394,12 @@ public class SnackController {
 
 ### 5. Write `POST` endpoint 
 
-Now that we are using our repository, we need to be able to write to it. For this, we will be creating a new endpoint in `SnackController`.
+Now that we are using our repository, we need to be able to write to it. For this, we will be creating a new endpoint in `StudentController`.
 
 Just like our `GET` endpoint, our new `POST` endpoint requests an annotated method in the controller. The header for the controller method is provided below:
 
 <Tabs
-  groupId="SnackController2"
+  groupId="StudentController2"
   defaultValue="snippet"
   values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -395,13 +408,13 @@ Just like our `GET` endpoint, our new `POST` endpoint requests an annotated meth
 
   <TabItem value="snippet">
 
- ```java title="SnackController.java"
+ ```java title="StudentController.java"
 @PostMapping(
-    value = "/v1/snacks",
+    value = "/v1/students",
     consumes = MediaType.APPLICATION_JSON_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE)
 
-  public Snack createSnack(@RequestBody Snack snack) {
+  public Student createStudent(@RequestBody Student student) {
     ...
   }
  ```
@@ -413,37 +426,39 @@ Just like our `GET` endpoint, our new `POST` endpoint requests an annotated meth
 If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
 
 
-```java title="SnackController.java"
-package com.gettechie.bootcamp.controller;
+```java title="StudentController.java"
+package com.geteche.students.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.gettechie.bootcamp.entity.SnackEntity;
-import com.gettechie.bootcamp.model.Snack;
-import com.gettechie.bootcamp.service.SnackEntity;
-import com.gettechie.bootcamp.transformer.SnackTransformer;
+import com.geteche.students.model.Student;
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.service.StudentService;
+import com.geteche.students.transformer.StudentTransformer;
 
 @RestController 
-public class SnackController {
-  @Autowired SnackService snackService;
+public class StudentController {
 
-  @GetMapping(value = "/v1/snack/{snackId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Snack getSnackById(@PathVariable("snackId") Integer id) {
-    return SnackTransformer.toSnack(snackService.getSnackById(id));
+  @Autowired 
+  StudentService studentService;
+
+  @GetMapping(value = "/v1/students/{studentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Student getStudentById(@PathVariable("studentId") Integer id) {
+    return StudentTransformer.toStudent(studentService.getStudentById(id));
   }
 
   @PostMapping(
-    value = "/v1/snacks",
+    value = "/v1/students",
     consumes = MediaType.APPLICATION_JSON_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE)
-  public Snack createSnack(@RequestBody Snack snack) {
+  public Student createStudent(@RequestBody Student student) {
     
-    SnackEntity snackToCreate = SnackTransformer.toSnackEntity(snack);
-    SnackEntity createdSnack = snackService.createSnack(snackToCreate);
+    StudentEntity studentToCreate = StudentTransformer.toStudentEntity(student);
+    StudentEntity createdStudent = studentService.createStudent(studentToCreate);
 
-    return SnackTransformer.toSnack(createdSnack);
+    return StudentTransformer.toStudent(createdStudent);
   }
 }
 ```
@@ -452,10 +467,10 @@ public class SnackController {
 </Tabs>
 
 
-In addition, we need to write a `createSnack()` method in `SnackService` to actually perform the logic. 
+In addition, we need to write a `createStudent()` method in `StudentService` to actually perform the logic. 
 
 <Tabs
-    groupId ="SnackService2"
+    groupId ="StudentService2"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -463,8 +478,8 @@ In addition, we need to write a `createSnack()` method in `SnackService` to actu
     ]}>
 <TabItem value="snippet">
 
-```java title="SnackService.java"
-  public SnackEntity createSnack(SnackEntity snackToCreate) {
+```java title="StudentService.java"
+  public StudentEntity createStudent(StudentEntity studentToCreate) {
     ...
   }
 
@@ -476,28 +491,30 @@ In addition, we need to write a `createSnack()` method in `SnackService` to actu
 
 If copying the full file you must replace the `bootcamp` path in the package name and imports to match your project name. 
 
-```java title="SnackService.java"
-package com.gettechie.bootcamp.service;
+```java title="StudentService.java"
+package com.geteche.students.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gettechie.bootcamp.entity.SnackEntity;
-import com.gettechie.bootcamp.repository.SnackRepository;
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.repository.StudentRepository;
+
+import java.util.Optional;
 
 @Service
-public class SnackService {
+public class StudentService {
 
-  @Autowired SnackRepository snackRepository;
+  @Autowired StudentRepository studentRepository;
 
-  public SnackEntity getSnackById(Integer id) {
-    Optional<SnackEntity> mySnack = snackRepository.findById(id);
+  public StudentEntity getStudentById(Integer id) {
+    Optional<StudentEntity> student = studentRepository.findById(id);
 
-    return mySnack.orElseThrow();
+    return student.orElseThrow();
   }
 
-  public SnackEntity createSnack(SnackEntity snackToCreate) {
-    return snackRepository.save(snackToCreate);
+  public StudentEntity createStudent(StudentEntity studentToCreate) {
+    return studentRepository.save(studentToCreate);
   }
 
 }
@@ -558,149 +575,225 @@ spring.datasource.password=sa
 In this step, we will:
 
 - Update existing unit and integration tests.
-- Write and additional test in `SnackControllerTest` and `SnackServiceTest` for the `createSnack()` method.
-- Add a new unit test for `SnackTransformer`. 
-- Update the integration test for first create a snack before retrieving it. 
+- Write and additional test in `StudentControllerTest` and `StudentServiceTest` for the `createStudent()` method.
+- Add a new unit test for `StudentTransformer`. 
+- Update the integration test for first create a Student before retrieving it. 
 - Below are just example if you stuck, Please tru on your own first.
 
 <Tabs
   defaultValue="empty"
   values={[
     {label: 'Examples', value: 'empty'},
-    {label: 'SnackControllerTest', value: 'createSnackTest'},
-    {label: 'SnackServiceTest', value: 'saveSnackTest'},
-    {label: 'SnackTransformerTest', value: 'transformerTests'},
-    {label: 'SnackIntegrationTest', value: 'createSnackIntegrationTest'},
+    {label: 'StudentControllerTest', value: 'createStudentTest'},
+    {label: 'StudentServiceTest', value: 'saveStudentTest'},
+    {label: 'StudentTransformerTest', value: 'transformerTests'},
   ]}>
 
   <TabItem value="empty">
     <br/>
   </TabItem>
 
-  <TabItem value="createSnackTest">
+  <TabItem value="createStudentTest">
 
-Because we need to mock static method contained in `SnackTransformer.java`, and additional dependency must be added to the `build.gradle` file
+Because we need to mock static method contained in `StudentTransformer.java`, and additional dependency must be added to the `build.gradle` file
 
 ```groovy title="build.gradle"
 dependencies {
   ...
-  testImplementation('org.mockito-inline:3.9.0')
+  testImplementation('org.mockito:mockito-inline:3.9.0')
   ...
 }
 ```  
 
-```java title="SnackControllerTest.java"
-  @Test
-  public void createSnackTest() {
-    Integer id = 1;
-    String name = "John";
-    Snack snack = new Snack(id, name);
-    SnackEntity snackEntity = new SnackEntity(id, name);
+```java title="StudentControllerTest.java"
+package com.geteche.students.controller;
 
-    try (MockedStatic<SnackTransformer> transformer = Mockito.mockStatic(SnackTransformer.class)) {
-      transformer
-        .when(
-          () -> {
-            SnackTransformer.toSnackEntity(snack);
-          }
-        )
-        .thenReturn(snackEntity);
-      
-      Mockito.when(snackService.createSnack(snackEntity)).thenReturn(snackEntity);
+import static org.assertj.core.api.Assertions.assertThat;
 
-      transformer
-        .when(
-          () -> {
-            SnackTransformer.toSnack(snackEntity);
-          }
-        ) 
-        .thenReturn(snack);
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.MockedStatic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-        Snack createdSnack = snackController.createSnack(snack);
+import com.geteche.students.model.Student;
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.service.StudentService;
+import com.geteche.students.transformer.StudentTransformer;
 
-        assertThat(createdSnack.getId()).isEqualTo(snackEntity.getId());
-        assertThat(createdSnack.getName()).isEqualTo(snackEntity.getName());
-    
+@SpringBootTest
+public class StudentControllerTest {
+
+    @Autowired
+    private StudentController studentController;
+
+    @MockBean
+    private StudentService studentService;
+
+    @Test
+    public void getStudentByIdTest() {
+        Integer id  = 1;
+        String name = "John";
+        //highlight-start
+        StudentEntity studentToReturn = new StudentEntity(id, name);
+        //highlight-end
+
+        Mockito.when(studentService.getStudentById(id)).thenReturn(studentToReturn);
+
+        Student Student = studentController.getStudentById(id);
+
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo(name);
     }
-  }
+
+    //highlight-start
+    @Test
+    public void createStudentTest() {
+      Integer id = 1;
+      String name = "John";
+      Student student = new Student(id, name);
+      StudentEntity studentEntity = new StudentEntity(id, name);
+
+      try (MockedStatic<StudentTransformer> transformer = Mockito.mockStatic(StudentTransformer.class)) {
+        transformer
+          .when(
+            () -> {
+              StudentTransformer.toStudentEntity(student);
+            }
+          )
+          .thenReturn(studentEntity);
+        
+        Mockito.when(studentService.createStudent(studentEntity)).thenReturn(studentEntity);
+
+        transformer
+          .when(
+            () -> {
+              StudentTransformer.toStudent(studentEntity);
+            }
+          ) 
+          .thenReturn(student);
+
+          Student createdStudent = studentController.createStudent(student);
+
+          assertThat(createdStudent.getId()).isEqualTo(studentEntity.getId());
+          assertThat(createdStudent.getName()).isEqualTo(studentEntity.getName());
+      
+      }
+    }
+    //highlight-end
+}
 ```
   
   </TabItem>
 
-  <TabItem value="saveSnackTest">
+  <TabItem value="saveStudentTest">
 
-```java title="SnackServiceTest.java"
-  @Test 
-  public void saveSnackTest() {
-    SnackEntity snackToCreate = new SnackEntity(1, "John");
+```java title="StudentServiceTest.java"
+package com.geteche.students.service;
 
-    Mockito.when(snackRepository.save(snackToCreate)).thenReturn(snackToCreate);
+import static org.assertj.core.api.Assertions.assertThat;
 
-    SnackEntity createdSnack = snackService.createSnack(snackToCreate);
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.repository.StudentRepository;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-    assertThat(snackToCreate.getId()).isEqualTo(createdSnack.getId());
-    assertThat(snackToCreate.getName()).isEqualTo(createdSnack.getName());
-  }
+import java.util.Optional;
 
+@SpringBootTest
+public class StudentServiceTest {
+
+    @Autowired
+    private StudentService studentService;
+
+    //highlight-start
+    @MockBean
+    private StudentRepository studentRepository;
+    //highlight-end
+
+    @Test
+    public void getStudentByIdTest() {
+        Integer id = 1;
+        //highlight-start
+        StudentEntity studentToCreate = new StudentEntity(id, "John");
+
+        Mockito.when(studentRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(studentToCreate));
+        //highlight-end
+
+        StudentEntity Student = studentService.getStudentById(id);
+
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo("John");
+    }
+
+    //highlight-start
+    @Test
+    public void saveStudentTest() {
+        StudentEntity studentToCreate = new StudentEntity(1, "John");
+
+        Mockito.when(studentRepository.save(studentToCreate)).thenReturn(studentToCreate);
+
+        StudentEntity createdStudent = studentService.createStudent(studentToCreate);
+
+        assertThat(studentToCreate.getId()).isEqualTo(createdStudent.getId());
+        assertThat(studentToCreate.getName()).isEqualTo(createdStudent.getName());
+    }
+    //highlight-end
+}
 ```
 
   </TabItem>
 
   <TabItem value="transformerTests">
 
-```java title="SnackTransformerTest.java"
-  @Test 
-  public void toSnackTest() {
-    Integer id = 2;
-    String name = "John";
-    SnackEntity snackEntity = new SnackEntity(id, name);
+```java title="StudentTransformerTest.java"
+package com.geteche.students.transformer;
 
-    Snack snack = SnackTransformer.toSnack(snackEntity);
+import static org.assertj.core.api.Assertions.assertThat;
 
-    assertThat(snack.getId()).isEqualTo(id);
-    assertThat(snack.getName()).isEqualTo(name);    
-  }
+import com.geteche.students.entity.StudentEntity;
+import com.geteche.students.model.Student;
+import org.junit.jupiter.api.Test;
 
-  @Test 
-  public void toSnackEntityTest() {
-    Integer id = 3;
-    String name = "Chris";
-    Snack snack = new Snack(id, name);
+public class StudentTransformerTest {
 
-    SnackEntity snackEntity = SnackTransformer.toSnackEntity(snackEntity);
+    @Test
+    public void toStudentTest() {
+        Integer id = 2;
+        String name = "John";
+        StudentEntity studentEntity = new StudentEntity(id, name);
 
-    assertThat(snackEntity.getId()).isEqualTo(id);
-    assertThat(snackEntity.getName()).isEqualTo(name);  
-  }
+        Student Student = StudentTransformer.toStudent(studentEntity);
+
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo(name);
+    }
+
+    @Test
+    public void toStudentEntityTest() {
+        Integer id = 3;
+        String name = "Chris";
+        Student student = new Student(id, name);
+
+        StudentEntity StudentEntity = StudentTransformer.toStudentEntity(student);
+
+        assertThat(StudentEntity.getId()).isEqualTo(id);
+        assertThat(StudentEntity.getName()).isEqualTo(name);
+    }
+
+}
 ```
-
-  </TabItem>
-
-  <TabItem value="createSnackIntegrationTest">
-
-```java title="SnackTest.java"
-  @Test
-  public void createSnackIntegrationTest() {
-    String payload = "{\n" + "  \"name\": \"John\"\n" + "}";
-    given()
-          .contentType(contentType.JSON)
-          .accept(contentType.JSON)
-          .body(payload)
-          .when()
-          .post("api/v1/snacks")
-          .then()
-          .assertThat()
-          .statusCode(200)
-          .body("name", equalTo("John"));
-  }
-``` 
 
   </TabItem>
 
 </Tabs>
 
 :::note
-We do not need to write any unit tests for `SnackRepository` because we did not write any new methods for it. we assume that the writers of the JPA have thoroughly tested its functionality. However, if we had written our own methods in `SnackRepository`, we would need to test them.
+We do not need to write any unit tests for `StudentRepository` because we did not write any new methods for it. we assume that the writers of the JPA have thoroughly tested its functionality. However, if we had written our own methods in `StudentRepository`, we would need to test them.
 :::
 
 

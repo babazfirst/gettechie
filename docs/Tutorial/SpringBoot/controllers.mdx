@@ -11,22 +11,22 @@ import TabItem from '@theme/TabItem';
 
 # Learn
 
-A **controller** is the first place on HTTP request goes once it reaches your application. it is, in essence,  translator between the HTTP request and your code. In spring Boot, we use the '@RestController' annotation to tell spring that our clsss is  controller. 
+A **controller** is the first place on HTTP request goes once it reaches your application. it is, in essence,  translator between the HTTP request and your code. In spring Boot, we use the `@RestController` annotation to tell spring that our class is  controller. 
 
-Controller contain **endpoints**, which describe the URIs the cclient applicaion can acess. we use annotation for these as well, which we will discuss later on.
+Controller contain **endpoints**, which describe the URIs the client application can access. we use annotation for these as well, which we will discuss later on.
 
 ### What is JUnit?
 
-[Junit](https://junit.org/junit5/) is a common java unit testing framework. It comes bundled with Intellij and  makes automting test cse simple.
+[Junit](https://junit.org/junit5/) is a common java unit testing framework. It comes bundled with Intellij and  makes automating test cse simple.
 
 ### What is REST Assured?
 
-[Rest Assured](http://rest-assured.io/) is a HTTP functional testing framework. It works by generating real HTTP request to an endpoint and allowing you to run asserions against the responses. 
+[Rest Assured](http://rest-assured.io/) is a HTTP functional testing framework. It works by generating real HTTP request to an endpoint and allowing you to run assertions against the responses. 
 
 ---
 
 :::note
-Any code below with a package or import that includes 'bootcamp' as part of its path should replace 'bootcamp' with your project name.
+Any code below with a package or import that includes `bootcamp` as part of its path should replace `bootcamp` with your project name.
 :::
 
 ## Do
@@ -34,9 +34,9 @@ Any code below with a package or import that includes 'bootcamp' as part of its 
 ### 1. Create New Working Branch 
 
 It is good practice when making changes to a git codebase to create nd work on  new branch so that your changes do not impact production code should they contain an error.
-A new branch should be made off your primary branch for every new feature/modifiction.  
+A new branch should be made off your primary branch for every new feature/modification.  
 
-First, try to get the latest code to avoid merge coflicts and resolve if any.
+First, try to get the latest code to avoid merge conflicts and resolve if any.
 
 ```bash
 git pull
@@ -50,20 +50,20 @@ git checkout -b <branch>
 
 where `<branch>` is the name of  new branch.
 
-The 'checkout' command will move us to this new branch while the '-b' flag will create this branch for us should it not yet exist. We are now working on a new branch. 
+The `checkout` command will move us to this new branch while the `-b` flag will create this branch for us should it not yet exist. We are now working on a new branch. 
 
-### 2. Write 'Snack' object
+### 2. Write `Student` object
 
-Write the 'snack' **POJO** (**plain old Java object**) with a default constructor, parameterized constructor, and getters.
+Write the `Student` **POJO** (**plain old Java object**) with a default constructor, parameterized constructor, and getters.
 
-In the 'src/main/java/com.optum.`<your project name>` directory, create a new package called 'model'.
+In the `src/main/java/com.geteche.students` directory, create a new package called `model`.
 
-In the newly created package, create a new java class called 'Snack.java'.
+In the newly created package, create a new java class called `Student.java`.
 
-Inclue private varibales 'id' and 'name', use Intellij to generate getters for those fields, and add 2 constructors in the class.
+Include private variables `id` and `name`, use Intellij to generate getters for those fields, and add 2 constructors in the class.
 
 <Tabs
-    groupId ="Snack"
+    groupId ="Student"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -71,15 +71,15 @@ Inclue private varibales 'id' and 'name', use Intellij to generate getters for t
     ]}>
 <TabItem value="snippet">
 
-```java title="Snack.java"
-public class Snack {
+```java title="Student.java"
+public class Student {
 
     private Integer id;
     private String name;
 
-    public Snack() {}
+    public Student() {}
 
-    public Snack(Integer id, String name) {
+    public Student(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -90,29 +90,37 @@ public class Snack {
 </TabItem>
 <TabItem value="full">
 
-If copying the full file you must replace the'bootcamp' path in the packge name and import to match your project name. 
+If copying the full file you must replace the `bootcamp` path in the package name and import to match your project name. 
 
-```java title="Snack.java"
-package com.optum.bootcamp.model;
+```java title="Student.java"
+package com.geteche.students.model;
 
-public class Snack{
+public class Student{
+
     private Integer id;
-
     private String name;
 
-    public Snack() {}
+    public Student() {}
 
-    public Snack(Integer id, String name) {
+    public Student(Integer id, String name) {
         this.id = id;
-        this.name;
+        this.name = name;
     }
 
     public Integer getId() {
         return id;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
 ```
@@ -124,18 +132,18 @@ public class Snack{
 For those who are more familiar with java, the reason why we use the `Integer` class instead of the `int` primitive here will become clear later on.
 :::
 
-### 3. Write `SnackController`
+### 3. Write `StudentController`
 
-Write the `SnackController` with one `GET` endpoint that will retrieve a single `Snack`.
+Write the `StudentController` with one `GET` endpoint that will retrieve a single `Student`.
 
-In the `src/main/java/com.optum.<your project name>` directory, create a new package called `controller`.
+In the `src/main/java/com.geteche.students` directory, create a new package called `controller`.
 
-In the newly created package, create a new Java class called `SnackController.java`.
+In the newly created package, create a new Java class called `StudentController.java`.
 
-Based on the annotation nd method header in the code snippet below, implement the `getSnackById` method to return  single `Snack` object. 
+Based on the annotation and method header in the code snippet below, implement the `getStudentById` method to return  single `Student` object. 
 
 <Tabs
-    groupId="SnackController"
+    groupId="StudentController"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -145,32 +153,32 @@ Based on the annotation nd method header in the code snippet below, implement th
 
 ```java 
 @GetMapping(
-    value = "/v1/snacks/{snackId}",
+    value = "/v1/students/{studentId}",
     products = MediaType.APPLICATION_JSON_VALUE)
-public Snack getSnackById(@PathVaribl("snackId") Integer id)
+public Student getStudentById(@PathVariable("studentId") Integer id)
 ```
 </TabItem>
     
 <TabItem value="full">
 
-If copying the full file you must replace the 'bootcamp' path in the package name imports to match your project name. 
+If copying the full file you must replace the `bootcamp` path in the package name imports to match your project name. 
 
 ```java
-package com.optum.bootcamp.controller;
+package com.geteche.students.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVarible;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.optum.bootcamp.model.Snack;
+import com.geteche.students.model.Student;
 
 @RestController
-public class SnackController {
+public class StudentController {
 
-    @GetMapping(value = "v1/snacks/{snackId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Snack getSnackById(@Pathvariable("snackId") Integer id) {
-        return new Snack(id, "ButterFingers")
+    @GetMapping(value = "v1/students/{studentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Student getStudentById(@PathVariable("studentId") Integer id) {
+        return new Student(id, "John");
     }
 }
 
@@ -186,24 +194,41 @@ There are two parameters in this annotation:
 1. `value`, which tells the controller what the URI should look like; and 
 2. `produces`, which tells the controller that the HTTP response it sends back to the client should be encoded as **JSON** (**JavaScript Object Notation**).
 
-The String we pass to `value` is taced on to the end of the URI (hence, **endpoint**). Notice the braces (`{}`) in the string. These braces denote a variable in the URI. Each of our `Snack` objects will be given a unique ID, and if we use this ID in our HTTP request, the controller will parse it and asign its value to a parameter in the method call. we do this with the `@PathVariable` annotation you can see in the method header. 
+The String we pass to `value` is taced on to the end of the URI (hence, **endpoint**). Notice the braces (`{}`) in the string. These braces denote a variable in the URI. Each of our `Student` objects will be given a unique ID, and if we use this ID in our HTTP request, the controller will parse it and assign its value to a parameter in the method call. we do this with the `@PathVariable` annotation you can see in the method header. 
 
-For example, if you wanted to retrieve the snack with ID 1, your request URL would look like: `http://localhost:8080/api/v1/snacks/1`. The application would then use the value `1` in its (hidden) call to `getSnackById()`. 
+For example, if you wanted to retrieve the Student with ID 1, your request URL would look like: `http://localhost:8080/api/v1/students/1`. The application would then use the value `1` in its (hidden) call to `getStudentById()`. 
 
-### 4. Write tests
+### 4. Configure base URL 
 
-Write a JUnit unit test and a REST Assured integration test for the `SnackControler`. 
+<Tabs
+    groupId="appProperties"
+    defaultValue="config"
+    values={[
+        {label: 'Configuration', value: 'config'}
+    ]}>
+<TabItem value="config">
+
+```properties title="src/main/resources/application.properties"
+server.servlet.context-path=/api
+```
+
+</TabItem>
+</Tabs>
+
+### 5. Write tests
+
+Write a JUnit unit test and a REST Assured integration test for the `StudentController`. 
 
 #### Unit test 
 
-  In the `src/test/java/co.optum.<your project name>` directory, create a new package called `controller`.
+  In the `src/test/java/com.geteche.students` directory, create a new package called `controller`.
 
-  In the newly created package, create a new Java class called `SnackControllerTest.java`. 
+  In the newly created package, create a new Java class called `StudentControllerTest.java`. 
 
-  Use the `@SpringBootTest` annotation to tell Spring Boot to start a Spring application context for the `@SpringBootApplication`, include a dependecy on `SnackController`, and use the `@Test` annotation to signify the method is a unit test. 
+  Use the `@SpringBootTest` annotation to tell Spring Boot to start a Spring application context for the `@SpringBootApplication`, include a dependency on `StudentController`, and use the `@Test` annotation to signify the method is a unit test. 
 
 <Tabs
-    groupId="SnackControllerTest"
+    groupId="StudentControllerTest"
     defaultValue="snippet"
     values={[
         {label: 'Code Snippet', value: 'snippet'},
@@ -213,13 +238,13 @@ Write a JUnit unit test and a REST Assured integration test for the `SnackContro
 
 ```java
 @SpringBootTest
-public class SnackControllerTest {
+public class StudentControllerTest {
 
     @Autowired
-    private SnackController snackController;
+    private StudentController StudentController;
 
     @Test
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         ...
     }
     ...
@@ -232,30 +257,30 @@ public class SnackControllerTest {
 If copying the full file you mush replace the `bootcamp` path in the package name and imports to match your project name. 
 
 ```java 
-package com.optum.bootcamp.controller;
+package com.geteche.students.controller;
 
 
-import static org.assertj.core.api.Assertions.assertThan;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.ooptum.bootcamp.model.Snack;
+import com.geteche.students.model.Student;
 
 @SpringBootTest 
-public lass SnackControllerTest {
+public class StudentControllerTest {
 
     @Autowired 
-    private SnackController snackController;
+    private StudentController StudentController;
 
     @Test
-    public void getSnackByIdTest() {
+    public void getStudentByIdTest() {
         Integer id = 1;
-        Snack snack = snackController.getSnackById(id);
+        Student Student = StudentController.getStudentById(id);
 
-        assertThat(snack.getId()).isEqual(id);
-        assertThat(snack.getName()).isEqual("Butterfingers");
+        assertThat(Student.getId()).isEqualTo(id);
+        assertThat(Student.getName()).isEqualTo("Butterfingers");
     }
 }
 ```
@@ -290,131 +315,13 @@ To execute the unit tests, run the following command in the Intellij terminal:
 </Tabs>
 
 
-#### Integration test 
-
-In the `srcc/intTest/java/com.optum.<your project name>` package, create a ew Java class caleed `SnackTest.java`. Note that a new package is NOT created in this case. 
-
-Write a setup() method using the `@BeforeAll` annotation to configure testing parameters. 
-
-Write a `genSnackTest()` method using the `@Test` annotation to integration test the `GET` endpoint. 
-
-<Tabs
-    groupId="SnackTest"
-    defaultValue="snippet"
-    values={[
-        {label: 'Code Snippet', value: 'snippet'},
-        {label: 'Full Code', value: 'full'},
-    ]}>
-<TabItem value="snippet">
-
-```java
-public class SnackTest {
-
-    @BeforeAll
-    static void setup() {
-        RestAssured.baseURI = Config.baseURI;
-        RestAssured.port = Config.port;
-        RestAssured.userRelaxedHTTPSValidation();
-    }
-
-    @Test
-    public void getSnackTest() {
-        ...
-    }
-
-}
-```
-
-</TabItem>
-
-<TabItem value="full">
-
-If copying the full file you must replace the'bootcamp' path in the packge name and import to match your project name. 
-
-```java
-package com.optum.bootcamp;
-
-import static io.restassured.RestAssured.when;
-import static org.hamcrest.Matchers.equalTo;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured;
-
-public class SnackTest {
-
-    @BeforeAll
-    static void setup() {
-        RestAssured.baseURI = Config.baseURI;
-        RestAssured.port = Config.port;
-        RestAssured.userRelaxedHTTPSValidation();
-    }
-
-    @Test
-    public void getSnackTest() {
-        Integer id = 1;
-        String name = "Butterfingers";
-
-        // Make the request and check that the response is what we expect 
-        when()
-            .get("/api/v1/snacks/{snackId}", id)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .body("id", equalTo(id))
-            .body("name", equalTo(name));
-    }
-}
-```
-
-</TabItem>
-</Tabs>
-
-To execute the integration tests, you must first [rebuild and start up the Docker container](./running_on_Docker#do).
-
-:::caution Important
-If your Docker container is still running, make sure to shut it down prior to rebuilding it with:
-
-```bash
-docker-compose down 
-```
-:::
-
-Once your container is up and running, runn the integration tests by executing the following command in the intelliJ terminal: 
-
-<Tabs
-    groupId="operating-system"
-    defaultValue="win"
-    values={[
-        {label: 'Windows', value: 'win'},
-        {label: 'MacOS', value: 'mac'},
-    ]}>
-<TabItem value='win'>
-
-```bash
-.\gradlew testIntegration
-```
-
-</TabItem>
-
-<TabItem value='mac'>
-
-```bash
-./gradlew testIntegration
-```
-
-</TabItem>
-</Tabs>
-
-
-### 5. Debug
+### 6. Debug
 
 It is important to know how to debug, especially when trying to fix your tests that might be broken. In unit tests, it is as easy as setting breakpoints and start debugging. But in integration tests, you need to create a remote JVM debug configuration and attach debugger to process, because your application is running in Docker container, which is seen as a remote application. 
 
-### 6. Commit and push changes 
+### 7. Commit and push changes 
 
-Now that your changes have been made to the codebase, it is time to stage all of your changes for commiting by executing: 
+Now that your changes have been made to the codebase, it is time to stage all of your changes for committing by executing: 
 
 ```bash
 git add . 
@@ -444,7 +351,7 @@ git commit -m "<message>"
 where `<message>` is your commit message describing your changes.
 
 :::tip
-It's common practice to wirte commit messages in the present tense rather than in the past tense (e.g. "Fix broken link" instead of "Fixed broken link").
+It's common practice to write commit messages in the present tense rather than in the past tense (e.g. "Fix broken link" instead of "Fixed broken link").
 Additionally, keep your commit messages as concise as possible. This [blog post by Chris Beams](https://chris.beams.io/posts/git-commit/) provides an in-depth discussion on the importance of good commit messages, as well as guidelines for writing good messages. 
 :::
 
@@ -458,22 +365,22 @@ git push --set-upstream origin <branch>
 where `<branch>` is your new branch name from before.
 
 :::note
-Intead of `--set-upstream`, you can also use the shorthand `-u` flag. It will achieve the same result. And this is usually needed the first time only. After that, you don't need this flag. 
+Instead of `--set-upstream`, you can also use the shorthand `-u` flag. It will achieve the same result. And this is usually needed the first time only. After that, you don't need this flag. 
 :::
 
-### 7. Open pull request 
+### 8. Open pull request 
 
 In GitHub, open a pull request and select one or more individuals to review your changes. Provide additional comments as necessary. 
 
-As sonn as you create the pull request, a new build in Jenkins will start. This build will build and test your new code and ensure that is passes quality gateways. If the build fails, you may need to go back and make changes to your code. 
+As soon as you create the pull request, a new build in Jenkins will start. This build will build and test your new code and ensure that is passes quality gateways. If the build fails, you may need to go back and make changes to your code. 
 
-### 8. Merge branch into `master`
+### 9. Merge branch into `master`
 
 After your code has been reviewed and the Jenkins build has completed successfully, you will be able to merge your code into `master` branch. After doing so, keeping in line with the [trunk-based branching strategy](https://test/com), you can safely delete the branch. 
 
 After merging into `master` another Jenkins build will start to deploy your application to nonprod. 
 
-### 9. Prepare for further development 
+### 10. Prepare for further development 
 
 Now that the changes have been merged with the remote `master` branch, we need to update our local copy. To do so, first switch over to your local copy of `master` by executing the following command in the IntelliJ terminal: 
 
@@ -481,13 +388,13 @@ Now that the changes have been merged with the remote `master` branch, we need t
 git checkout master 
 ```
 
-Next, retrive your changes by execuring:
+Next, retrieve your changes by executing:
 
 ```bash
 git pull 
 ```
 
-You can also safely delete your old branch by execuring: 
+You can also safely delete your old branch by executing: 
 
 ```bash
 git branch -d <branch>
@@ -496,7 +403,7 @@ git branch -d <branch>
 where `<branch>` is the name of your branch from before. 
 
 :::note
-Sometimes, Git will watn your that there are uncommited changes on the branch your are truing to delete or that your local branch has not been fully merged. If, however, you know that all the correct changes have been committed, pushed, and merged successfully, you can use the `-D` flag (instead of `-d`) to force the brancch to be deleted.
+Sometimes, Git will warn your that there are uncommitted changes on the branch your are truing to delete or that your local branch has not been fully merged. If, however, you know that all the correct changes have been committed, pushed, and merged successfully, you can use the `-D` flag (instead of `-d`) to force the branch to be deleted.
 :::
 
 ---
